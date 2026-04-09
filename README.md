@@ -155,3 +155,134 @@ Fall\ Cell\ Delay = 28.042ps
 
 ![day3](Images/day3(15).png)
 ![day3](Images/day3(16).png)
+
+Here is a **complete, detailed paragraph for Day 4 (including all important concepts + practical flow)** 👇
+
+---
+
+## DAY 04: Pre-layout Timing Analysis and Importance of Good Clock Tree
+Day 4 focuses on integrating a custom-designed standard cell (inverter) into the full ASIC design flow and performing timing analysis and optimization before and after clock tree synthesis (CTS). The process begins by ensuring that the custom inverter layout is physically valid for integration. This involves fixing DRC errors and verifying three critical conditions: (1) input/output pins must lie on routing track intersections, (2) the cell width must be an odd multiple of horizontal track pitch, and (3) the cell height must be an even multiple of vertical track pitch. These conditions ensure compatibility with automated placement and routing. Once verified, the layout is saved with a new name and a LEF (Library Exchange Format) file is generated, which contains abstract physical information of the cell required for placement tools. This LEF, along with corresponding library (.lib) files, is then copied into the `picorv32a` design directory, and the OpenLANE configuration (`config.tcl`) is updated to include these new files using environment variables like `LIB_SYNTH`, `LIB_FASTEST`, `LIB_SLOWEST`, and `EXTRA_LEFS`.
+
+After setup, the OpenLANE flow is run in interactive mode, and synthesis is performed with the newly added inverter cell. Introducing a custom cell often creates timing violations, so design parameters are tuned to improve timing. Important parameters include `SYNTH_STRATEGY` (e.g., DELAY optimization), `SYNTH_SIZING` (enabling gate sizing), and buffering options. By adjusting these, timing improves (e.g., Worst Negative Slack becomes zero), though area may increase. Once synthesis is successful, floorplanning and placement are performed, either using `run_floorplan` or step-by-step commands like `init_floorplan`, `place_io`, and `tap_decap_or`. Placement ensures that the custom inverter is correctly instantiated and abutted with other standard cells, with proper power connections verified using Magic.
+
+Next, pre-layout timing analysis is performed using OpenSTA. This involves creating configuration files (`pre_sta.conf`) and constraint files (`.sdc`), then running STA to identify timing violations. One major cause of delay is high fanout, so parameters like `SYNTH_MAX_FANOUT` are adjusted to limit load and improve timing. Further optimization is done using Engineering Change Orders (ECO), where weak cells (e.g., OR gates with low drive strength) are replaced with stronger versions (e.g., `or3_4`, `or4_4`) using commands like `replace_cell`. This reduces delay and improves slack. After optimization, the updated netlist is written back using `write_verilog`, replacing the old synthesis netlist.
+
+The improved design is then re-run through floorplanning, placement, and Clock Tree Synthesis (CTS). CTS is a critical stage where the clock signal is distributed across the chip using buffers to ensure minimal skew and equal arrival time at all flip-flops. After CTS, timing analysis is performed again using OpenROAD (with integrated OpenSTA), where LEF, DEF, netlist, and constraint files are loaded, and detailed timing reports are generated including slew, capacitance, and path delays. The importance of clock buffers is explored by modifying the `CTS_CLK_BUFFER_LIST`, such as removing `sky130_fd_sc_hd__clkbuf_1`, and observing the impact on clock skew and timing. Reports like `report_clock_skew` help analyze setup and hold timing variations across the clock network.
+
+Overall, Day 4 demonstrates the complete integration of a custom standard cell into an ASIC flow, followed by synthesis, placement, timing analysis, ECO-based optimization, and clock tree design. It highlights how timing violations arise due to factors like fanout and weak drive strength, and how they are resolved through parameter tuning and cell replacement. It also emphasizes the importance of a well-designed clock tree in achieving reliable and high-performance chip operation. 
+
+![day4](Images/day4(1).png)
+![day4](Images/day4(2).png)
+![day4](Images/day4(3).png)
+![day4](Images/day4(4).png)
+![day4](Images/day4(5).png)
+![day4](Images/day4(6).png)
+![day4](Images/day4(7).png)
+![day4](Images/day4(8).png)
+![day4](Images/day4(9).png)
+![day4a](Images/day4a(1).png)
+![day4a](Images/day4a(2).png)
+![day4a](Images/day4a(3).png)
+![day4a](Images/day4a(4).png)
+![day4a](Images/day4a(5).png)
+![day4a](Images/day4a(6).png)
+![day4a](Images/day4a(7).png)
+![day4a](Images/day4a(8).png)
+![day4a](Images/day4a(9).png)
+![day4a](Images/day4a(10).png)
+![day4a](Images/day4a(11).png)
+![day4a](Images/day4a(12).png)
+![day4a](Images/day4a(13).png)
+![day4a](Images/day4a(14).png)
+![day4a](Images/day4a(15).png)
+![day4a](Images/day4a(16).png)
+![day4a](Images/day4a(17).png)
+![day4a](Images/day4a(18).png)
+![day4a](Images/day4a(19).png)
+![day4a](Images/day4a(20).png)
+![day4a](Images/day4a(21).png)
+![day4a](Images/day4a(22).png)
+![day4a](Images/day4a(23).png)
+![day4a](Images/day4a(24).png)
+![day4a](Images/day4a(25).png)
+![day4a](Images/day4a(26).png)
+![day4a](Images/day4a(27).png)
+![day4a](Images/day4a(28).png)
+![day4a](Images/day4a(29).png)
+![day4a](Images/day4a(30).png)
+![day4a](Images/day4a(31).png)
+![day4a](Images/day4a(32).png)
+![day4a](Images/day4a(33).png)
+![day4a](Images/day4a(34).png)
+![day4a](Images/day4a(35).png)
+![day4a](Images/day4a(36).png)
+![day4a](Images/day4a(37).png)
+![day4a](Images/day4a(38).png)
+![day4a](Images/day4a(39).png)
+![day4a](Images/day4a(40).png)
+![day4a](Images/day4a(41).png)
+![day4a](Images/day4a(42).png)
+![day4a](Images/day4a(43).png)
+![day4a](Images/day4a(44).png)
+![day4a](Images/day4a(45).png)
+![day4a](Images/day4a(46).png)
+![day4a](Images/day4a(47).png)
+![day4a](Images/day4a(48).png)
+![day4a](Images/day4a(49).png)
+![day4a](Images/day4a(50).png)
+![day4a](Images/day4a(51).png)
+![day4a](Images/day4a(52).png)
+![day4a](Images/day4a(53).png)
+![day4a](Images/day4a(54).png)
+![day4a](Images/day4a(55).png)
+![day4a](Images/day4a(56).png)
+![day4a](Images/day4a(57).png)
+![day4a](Images/day4a(58).png)
+![day4a](Images/day4a(59).png)
+![day4a](Images/day4a(60).png)
+![day4a](Images/day4a(61).png)
+![day4a](Images/day4a(62).png)
+![day4a](Images/day4a(63).png)
+![day4a](Images/day4a(64).png)
+![day4a](Images/day4a(65).png)
+![day4a](Images/day4a(66).png)
+![day4a](Images/day4a(67).png)
+![day4a](Images/day4a(68).png)
+![day4a](Images/day4a(69).png)
+![day4a](Images/day4a(70).png)
+![day4a](Images/day4a(71).png)
+![day4a](Images/day4a(72).png)
+![day4a](Images/day4a(73).png)
+![day4a](Images/day4a(74).png)
+![day4a](Images/day4a(75).png)
+![day4a](Images/day4a(76).png)
+
+## Day 05: Routing, Signoff and Final Physical Verification
+
+Day 5 focuses on the final stages of ASIC physical design, where the design is completed through routing, verified using signoff checks, and prepared for fabrication by generating the final GDSII file. After placement and clock tree synthesis from Day 4, the next step is routing, where all the placed cells are electrically connected using metal layers. Routing is divided into two main stages: global routing and detailed routing. In global routing, approximate paths for connections are determined, focusing on congestion reduction and optimal path planning. In detailed routing, exact geometries are assigned to wires while strictly following design rules from the PDK. The router ensures that connections are made without violations such as shorts, spacing issues, or layer conflicts.
+
+During routing, multiple metal layers (like Metal1, Metal2, Metal3, etc.) are used to avoid congestion and enable efficient signal flow. Lower metal layers are typically used for local connections, while higher layers are used for long-distance routing like clock and power networks. Special care is taken for clock routing, ensuring minimal skew and delay, as timing is highly sensitive to clock distribution.
+
+After routing, the design enters the signoff stage, which includes several critical verification steps. The first is Design Rule Check (DRC), which ensures that the layout follows all fabrication rules such as spacing, width, and enclosure constraints defined by the Sky130 PDK. Any violation must be fixed before proceeding. Next is Layout vs Schematic (LVS), which verifies that the physical layout matches the logical netlist. This ensures that no connectivity errors occurred during layout generation. Another important step is Static Timing Analysis (STA) after routing, where accurate delays (including parasitics from routing) are considered to ensure that setup and hold timing requirements are met.
+
+At this stage, parasitic extraction (PEX) becomes important. Routing introduces resistance and capacitance, which affect signal delay and power consumption. These parasitics are extracted and included in timing analysis to get realistic performance results. If violations occur, additional fixes such as buffer insertion, gate sizing, or rerouting may be required.
+
+Finally, once the design passes all verification checks, the GDSII file is generated. This is the final layout file sent to the fabrication foundry. It contains all geometric information required to manufacture the chip on silicon. Before tape-out, additional checks like antenna checks (to prevent charge accumulation damage during fabrication) and ERC (Electrical Rule Check) may also be performed.
+
+![day5](Images/day5(1).png)
+![day5](Images/day5(2).png)
+![day5](Images/day5(3).png)
+![day5](Images/day5(4).png)
+![day5](Images/day5(5).png)
+![day5](Images/day5(6).png)
+![day5](Images/day5(7).png)
+![day5](Images/day5(8).png)
+![day5](Images/day5(9).png)
+![day5](Images/day5(10).png)
+![day5](Images/day5(11).png)
+![day5](Images/day5(12).png)
+![day5](Images/day5(13).png)
+![day5](Images/day5(14).png)
+![day5](Images/day5(15).png)
+![day5](Images/day5(16).png)
+![day5](Images/day5(17).png)
