@@ -246,6 +246,57 @@ Overall, Day 4 demonstrates the complete integration of a custom standard cell i
 ![day4a](Images/day4a(64).png)
 ![day4a](Images/day4a(65).png)
 ![day4a](Images/day4a(66).png)
+
+```tcl
+echo $::env(CTS_CLK_BUFFER_LIST)
+
+set ::env(CTS_CLK_BUFFER_LIST) [lreplace $::env(CTS_CLK_BUFFER_LIST) 0 0]
+
+echo $::env(CTS_CLK_BUFFER_LIST)
+
+echo $::env(CURRENT_DEF)
+
+set ::env(CURRENT_DEF) /openLANE_flow/designs/picorv32a/runs/24-03_10-03/results/placement/picorv32a.placement.def
+
+run_cts
+
+echo $::env(CTS_CLK_BUFFER_LIST)
+
+openroad
+
+read_lef /openLANE_flow/designs/picorv32a/runs/24-03_10-03/tmp/merged.lef
+
+read_def /openLANE_flow/designs/picorv32a/runs/24-03_10-03/results/cts/picorv32a.cts.def
+
+write_db pico_cts1.db
+
+read_db pico_cts.db
+
+read_verilog /openLANE_flow/designs/picorv32a/runs/24-03_10-03/results/synthesis/picorv32a.synthesis_cts.v
+
+read_liberty $::env(LIB_SYNTH_COMPLETE)
+
+link_design picorv32a
+
+read_sdc /openLANE_flow/designs/picorv32a/src/my_base.sdc
+
+set_propagated_clock [all_clocks]
+
+report_checks -path_delay min_max -fields {slew trans net cap input_pins} -format full_clock_expanded -digits 4
+
+report_clock_skew -hold
+
+report_clock_skew -setup
+
+exit
+
+echo $::env(CTS_CLK_BUFFER_LIST)
+
+set ::env(CTS_CLK_BUFFER_LIST) [linsert $::env(CTS_CLK_BUFFER_LIST) 0 sky130_fd_sc_hd__clkbuf_1]
+
+echo $::env(CTS_CLK_BUFFER_LIST)
+```
+
 ![day4a](Images/day4a(67).png)
 ![day4a](Images/day4a(68).png)
 ![day4a](Images/day4a(69).png)
@@ -269,11 +320,42 @@ At this stage, parasitic extraction (PEX) becomes important. Routing introduces 
 
 Finally, once the design passes all verification checks, the GDSII file is generated. This is the final layout file sent to the fabrication foundry. It contains all geometric information required to manufacture the chip on silicon. Before tape-out, additional checks like antenna checks (to prevent charge accumulation damage during fabrication) and ERC (Electrical Rule Check) may also be performed.
 
+### Perform generation of Power Distribution Network (PDN) and explore the PDN layout
+```tcl
+./flow.tcl -interactive
+
+package require openlane 0.9
+
+prep -design picorv32a
+
+set lefs [glob $::env(DESIGN_DIR)/src/*.lef]
+add_lefs -src $lefs
+
+set ::env(SYNTH_STRATEGY) "DELAY 3"
+
+set ::env(SYNTH_SIZING) 1
+
+run_synthesis
+
+init_floorplan
+place_io
+tap_decap_or
+
+run_placement
+
+unset ::env(LIB_CTS)
+
+run_cts
+
+gen_pdn 
+```
 ![day5](Images/day5(1).png)
 ![day5](Images/day5(2).png)
 ![day5](Images/day5(3).png)
 ![day5](Images/day5(4).png)
 ![day5](Images/day5(5).png)
+
+### Perfrom detailed routing using TritonRoute and explore the routed layout
 ![day5](Images/day5(6).png)
 ![day5](Images/day5(7).png)
 ![day5](Images/day5(8).png)
@@ -282,6 +364,36 @@ Finally, once the design passes all verification checks, the GDSII file is gener
 ![day5](Images/day5(11).png)
 ![day5](Images/day5(12).png)
 ![day5](Images/day5(13).png)
+
+### Post-Route OpenSTA timing analysis with the extracted parasitics of the route
+```tcl
+openroad
+
+read_lef /openLANE_flow/designs/picorv32a/runs/26-03_08-45/tmp/merged.lef
+
+read_def /openLANE_flow/designs/picorv32a/runs/26-03_08-45/results/routing/picorv32a.def
+
+write_db pico_route.db
+
+read_db pico_route.db
+
+read_verilog /openLANE_flow/designs/picorv32a/runs/26-03_08-45/results/synthesis/picorv32a.synthesis_preroute.v
+
+read_liberty $::env(LIB_SYNTH_COMPLETE)
+
+link_design picorv32a
+
+read_sdc /openLANE_flow/designs/picorv32a/src/my_base.sdc
+
+set_propagated_clock [all_clocks]
+
+read_spef /openLANE_flow/designs/picorv32a/runs/26-03_08-45/results/routing/picorv32a.spef
+
+report_checks -path_delay min_max -fields {slew trans net cap input_pins} -format full_clock_expanded -digits 4
+
+exit
+```
+
 ![day5](Images/day5(14).png)
 ![day5](Images/day5(15).png)
 ![day5](Images/day5(16).png)
